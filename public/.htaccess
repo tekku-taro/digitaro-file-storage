@@ -2,7 +2,11 @@
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
-
+    <IfModule mod_headers.c>
+        <FilesMatch "\.(?i:css|js)$">
+            Header set Access-Control-Allow-Origin "*"
+        </FilesMatch>
+    </IfModule>
     RewriteEngine On
 
     # Handle Authorization Header

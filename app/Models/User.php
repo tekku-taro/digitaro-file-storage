@@ -41,4 +41,84 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function files()
+    {
+        return $this->hasMany(File::class);
+    }
+
+    public function favoriteFiles()
+    {
+        return $this->belongsToMany(File::class, 'favorites', 'user_id', 'file_id')->withTimestamps();
+    }
+
+    public function downloadedFiles()
+    {
+        return $this->belongsToMany(File::class, 'download_histories', 'user_id', 'file_id')->withTimestamps();
+    }
+
+    public function userGroups()
+    {
+        return $this->belongsToMany(Group::class, 'group_user', 'user_id', 'group_id')->withTimestamps();
+    }
+
+
+    public function favoriteFile($fileId)
+    {
+        $exists = $this->isFavoriteFile($fileId);
+
+        if (!$exists) {
+            $this->favoriteFiles()->attach($fileId);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function unfavoriteFile($fileId)
+    {
+        $exists = $this->isFavoriteFile($fileId);
+
+        if ($exists) {
+            $this->favoriteFiles()->detach($fileId);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function isFavoriteFile($fileId)
+    {
+        return $this->favoriteFiles()->where('file_id', $fileId)->exists();
+    }
+
+    public function attachGroup($groupId)
+    {
+        $exists = $this->isUserGroup($groupId);
+
+        if (!$exists) {
+            $this->userGroups()->attach($groupId);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function detachGroup($groupId)
+    {
+        $exists = $this->isUserGroup($groupId);
+
+        if ($exists) {
+            $this->userGroups()->detach($groupId);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function isUserGroup($groupId)
+    {
+        return $this->userGroups()->where('group_id', $groupId)->exists();
+    }
+
 }
