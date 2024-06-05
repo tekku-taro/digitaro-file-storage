@@ -6,6 +6,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+export const BASE_URL = import.meta.env.VITE_APP_URL;
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
