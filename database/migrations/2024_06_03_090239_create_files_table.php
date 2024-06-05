@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('group_id')->nullable()->constrained('groups')->restrictOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('file_type_id')->nullable()->constrained('file_types')->nullOnDelete();
             $table->string('title');

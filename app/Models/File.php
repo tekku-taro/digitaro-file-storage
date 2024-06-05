@@ -11,6 +11,7 @@ class File extends Model
     use HasFactory, SoftDeletes;
 
 	protected $fillable = [
+        'group_id',
         'user_id',
         'file_type_id',
         'title',
