@@ -11,10 +11,10 @@ export default function Welcome({ auth }: PageProps) {
                 <div className="sm:fixed sm:top-0 sm:right-0 p-6 text-end z-50">
                     {auth.user ? (
                         <Link
-                            href={route('dashboard')}
+                            href={route('files.index')}
                             className="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500"
                         >
-                            Dashboard
+                            Digitaro File Storage
                         </Link>
                     ) : (
                         <>
@@ -69,17 +69,17 @@ export default function Welcome({ auth }: PageProps) {
                         </p>
                         <div className="mt-10 flex items-center justify-center gap-x-6">
                         <Link
-                            href="/dashboard/files"
+                            href={route('files.index')}
                             className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                         >
                             Get started
                         </Link>
-                        <a
+                        {/* <a
                             href="#"
                             className="text-sm font-semibold leading-6 text-gray-900"
                         >
                             Learn more <span aria-hidden="true">→</span>
-                        </a>
+                        </a> */}
                         </div>
                     </div>
                     </div>
