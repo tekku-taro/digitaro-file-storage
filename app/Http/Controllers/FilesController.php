@@ -25,24 +25,68 @@ class FilesController extends Controller
 
         if($request->has('group_id')) {
             $query->where('group_id', $request->group_id);
-        } else if($request->has('favorite_list')) {
-            $query->whereHas('favoriteUsers', function($query) {
-                $query->where('id', Auth::id());
-            });
-        } else if($request->has('delete_list')) {
-            $query->onlyTrashed();
         }
+        if($request->has('file_type_id')) {
+            $query->where('file_type_id', $request->file_type_id);
+        }
+        if($request->has('search')) {
+            $query->where('title', 'LIKE', '%' . $request->search . '%');
+        }
+        $files = $query->with(['fileType'])->withCount(['favoriteUsers' => function($query) {
+            $query->where('user_id', Auth::id());
+        }])->get();
+
+        return Inertia::render('File/Index', [
+            'files' => $files,
+            'fileTypes' => FileType::all(),
+            'groups' => Auth::user()->userGroups,
+        ]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function favorites(Request $request)
+    {
+        $query = File::query();
+
+        $query->whereHas('favoriteUsers', function($query) {
+            $query->where('id', Auth::id());
+        });
 
         if($request->has('file_type_id')) {
             $query->where('file_type_id', $request->file_type_id);
         }
 
         if($request->has('search')) {
-            $query->where('title', $request->search);
+            $query->where('title', 'LIKE', '%' . $request->search . '%');
         }
         $files = $query->get();
 
-        return Inertia::render('Files.Index', [
+        return Inertia::render('File/Favorites', [
+            'files' => $files
+        ]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function trash(Request $request)
+    {
+        $query = File::query();
+
+        $query->onlyTrashed();
+
+        if($request->has('file_type_id')) {
+            $query->where('file_type_id', $request->file_type_id);
+        }
+
+        if($request->has('search')) {
+            $query->where('title', 'LIKE', '%' . $request->search . '%');
+        }
+        $files = $query->get();
+
+        return Inertia::render('File/Trash', [
             'files' => $files
         ]);
     }
@@ -75,7 +119,7 @@ class FilesController extends Controller
         $group = Group::find($validated['group_id']);
         $uploadedFile = $request->file('file');
         $fileName = $uploadedFile->getClientOriginalName();
-        $storage = Storage::disk('file');
+        $storage = Storage::disk('uploads');
         $path = $storage->putFileAs($group->name, $uploadedFile, $fileName);
 
 
@@ -88,7 +132,8 @@ class FilesController extends Controller
             'uploaded_at' => Carbon::now(),
         ]);
 
-        return response()->json(['result' => 'success']);
+        // return response()->json(['result' => 'success']);
+        return back();
     }
 
     /**
@@ -97,7 +142,7 @@ class FilesController extends Controller
     public function download(Request $request, $id)
     {
         $file = File::findOrFail($id);
-        $storage = Storage::disk('file');
+        $storage = Storage::disk('uploads');
         $url = $storage->url($file->url);
         $mimeType = $storage->mimeType($file->url);
 
@@ -109,38 +154,6 @@ class FilesController extends Controller
         $headers = [['Content-Type' => $mimeType]];
         return $storage->response($file->url, null, $headers, 'attachment');
         // return Storage::response($file->url, null, $headers, 'attachment');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
     }
 
     /**
@@ -171,7 +184,7 @@ class FilesController extends Controller
             $file->delete();
         }
 
-
-        return response()->json(['result' => 'success']);
+        return back();
+        // return response()->json(['result' => 'success']);
     }
 }

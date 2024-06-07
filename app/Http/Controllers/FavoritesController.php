@@ -16,7 +16,8 @@ class FavoritesController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $result = $user->favoriteFile($id);
-        return response()->json(['result' => $result ? 'success': 'failure']);
+        // return response()->json(['result' => $result ? 'success': 'failure']);
+        return back();
     }
 
     /**
@@ -27,6 +28,7 @@ class FavoritesController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $result = $user->unfavoriteFile($id);
-        return response()->json(['result' => $result ? 'success': 'failure']);
+        // return response()->json(['result' => $result ? 'success': 'failure']);
+        return back();
     }
 }

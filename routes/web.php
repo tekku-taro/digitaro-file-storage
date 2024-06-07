@@ -33,15 +33,17 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('/files', FilesController::class);
-    Route::post('/files/upload', [FavoritesController::class, 'upload'])->name('files.upload');
-    Route::get('/files/{id}/download', [FavoritesController::class, 'download'])->name('files.download');
+    Route::get('/favorites', [FilesController::class, 'favorites'])->name('favorites.index');
+    Route::get('/trash', [FilesController::class, 'trash'])->name('trash.index');
+    Route::post('/files/upload', [FilesController::class, 'upload'])->name('files.upload');
+    Route::get('/files/{id}/download', [FilesController::class, 'download'])->name('files.download');
     Route::post('/favorite/{id}', [FavoritesController::class, 'favorite'])->name('favorite');
     Route::delete('/unfavorite/{id}', [FavoritesController::class, 'unfavorite'])->name('unfavorite');
 
 
-    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';

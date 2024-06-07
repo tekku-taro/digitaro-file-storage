@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,6 +19,27 @@ class File extends Model
         'url',
         'uploaded_at',
 	];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['is_trashed'];
+
+    /**
+     * 表示用更新日
+     *
+     * @return  \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    public function isTrashed(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                return $this->trashed();
+            }
+        );
+    }
 
     public function fileType()
     {
