@@ -26,7 +26,7 @@ class FilesController extends Controller
         if($request->has('group_id')) {
             $query->where('group_id', $request->group_id);
         }
-        if($request->has('file_type_id')) {
+        if($request->has('file_type_id') && $request->file_type_id != 'all') {
             $query->where('file_type_id', $request->file_type_id);
         }
         if($request->has('search')) {
@@ -36,7 +36,7 @@ class FilesController extends Controller
             $query->where('user_id', Auth::id());
         }])->get();
 
-        return Inertia::render('File/Index', [
+        return Inertia::render('File/files/Index', [
             'files' => $files,
             'fileTypes' => FileType::all(),
             'groups' => Auth::user()->userGroups,
@@ -51,20 +51,24 @@ class FilesController extends Controller
         $query = File::query();
 
         $query->whereHas('favoriteUsers', function($query) {
-            $query->where('id', Auth::id());
+            $query->where('user_id', Auth::id());
         });
 
-        if($request->has('file_type_id')) {
+        if($request->has('file_type_id') && $request->file_type_id != 'all') {
             $query->where('file_type_id', $request->file_type_id);
         }
 
         if($request->has('search')) {
             $query->where('title', 'LIKE', '%' . $request->search . '%');
         }
-        $files = $query->get();
+        $files = $query->with(['fileType'])->withCount(['favoriteUsers' => function($query) {
+            $query->where('user_id', Auth::id());
+        }])->get();
 
-        return Inertia::render('File/Favorites', [
-            'files' => $files
+        return Inertia::render('File/favorites/Index', [
+            'files' => $files,
+            'fileTypes' => FileType::all(),
+            'groups' => Auth::user()->userGroups,
         ]);
     }
 
@@ -77,17 +81,21 @@ class FilesController extends Controller
 
         $query->onlyTrashed();
 
-        if($request->has('file_type_id')) {
+        if($request->has('file_type_id') && $request->file_type_id != 'all') {
             $query->where('file_type_id', $request->file_type_id);
         }
 
         if($request->has('search')) {
             $query->where('title', 'LIKE', '%' . $request->search . '%');
         }
-        $files = $query->get();
+        $files = $query->with(['fileType'])->withCount(['favoriteUsers' => function($query) {
+            $query->where('user_id', Auth::id());
+        }])->get();
 
-        return Inertia::render('File/Trash', [
-            'files' => $files
+        return Inertia::render('File/trash/Index', [
+            'files' => $files,
+            'fileTypes' => FileType::all(),
+            'groups' => Auth::user()->userGroups,
         ]);
     }
 
@@ -96,6 +104,7 @@ class FilesController extends Controller
      */
     public function upload(Request $request)
     {
+        // dd($request->all());
         try {
             DB::transaction(function () {
 
@@ -111,10 +120,14 @@ class FilesController extends Controller
         // dd($request->all());
         $validated = $request->validate([
             'group_id' => 'required|integer|exists:groups,id',
-            'file_type_id' => 'required',
             'title' => 'required',
             'file' => ['required', RulesFile::types($mimeTypes)],
-        ],['file' => 'アップロードできるファイルの種類は（' .implode(',', $mimeTypes).'）のみです。']);
+        ],
+            [
+                'file' => 'アップロードできるファイルの種類は（' .implode(',', $mimeTypes).'）のみです。',
+                'group_id' => 'ファイルアップロードはグループのファイル一覧画面で実行してください。'
+            ]
+        );
 
         $group = Group::find($validated['group_id']);
         $uploadedFile = $request->file('file');
@@ -127,12 +140,11 @@ class FilesController extends Controller
             'group_id' => $validated['group_id'],
             'user_id' => Auth::id(),
             'title' => $validated['title'],
-            'file_type_id' => $validated['file_type_id'],
+            'file_type_id' => FileType::getIdFromExtension($uploadedFile->extension()),
             'url' => $path,
             'uploaded_at' => Carbon::now(),
         ]);
 
-        // return response()->json(['result' => 'success']);
         return back();
     }
 
@@ -153,7 +165,6 @@ class FilesController extends Controller
 
         $headers = [['Content-Type' => $mimeType]];
         return $storage->response($file->url, null, $headers, 'attachment');
-        // return Storage::response($file->url, null, $headers, 'attachment');
     }
 
     /**
@@ -171,10 +182,11 @@ class FilesController extends Controller
                 'message' => $th->getMessage(),
             ]);
         }
-        $file = File::findOrFail($id);
+        // dd($request->all());
+        $file = File::withTrashed()->findOrFail($id);
 
         if($request->has('hard_delete')) {
-            $storage = Storage::disk('file');
+            $storage = Storage::disk('uploads');
             if($storage->exists($file->url)) {
                 $storage->delete($file->url);
             }
@@ -185,6 +197,28 @@ class FilesController extends Controller
         }
 
         return back();
-        // return response()->json(['result' => 'success']);
+    }
+
+    /**
+     * Restore the specified resource.
+     */
+    public function restore(string $id)
+    {
+        try {
+            DB::transaction(function () {
+
+            });
+        } catch (\Throwable $th) {
+            return response()->json([
+                'result' => 'failure',
+                'message' => $th->getMessage(),
+            ]);
+        }
+        // dd($request->all());
+        $file = File::withTrashed()->findOrFail($id);
+
+        $file->restore();
+
+        return back();
     }
 }

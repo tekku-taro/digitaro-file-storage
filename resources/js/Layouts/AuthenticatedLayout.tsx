@@ -5,6 +5,8 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link } from '@inertiajs/react';
 import { User } from '@/types';
+import { CircleUserRound } from 'lucide-react';
+import { Toaster } from "@/Components/ui/toaster"
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -32,11 +34,12 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                             <div className="ms-3 relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
+                                        <span className="inline-flex rounded-md items-center">
                                             <button
                                                 type="button"
                                                 className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                             >
+                                                <CircleUserRound  className="w-6 h-6 pr-1" />
                                                 {user.name}
 
                                                 <svg
@@ -123,6 +126,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
             )} */}
 
             <main>{children}</main>
+            <Toaster />
         </div>
     );
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Group;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
@@ -36,7 +38,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'commons' => [
-                'upload_url' => Storage::disk('uploads')->url,
+                'upload_url' => Storage::disk('uploads')->url(''),
+                'selected_group' => Group::find($request->group_id) ?? Auth::user()?->userGroups->first(),
             ],
         ];
     }

@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/favorite/{id}', [FavoritesController::class, 'favorite'])->name('favorite');
     Route::delete('/unfavorite/{id}', [FavoritesController::class, 'unfavorite'])->name('unfavorite');
 
+    Route::put('/files/{id}/restore', [FilesController::class, 'restore'])->name('files.restore');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

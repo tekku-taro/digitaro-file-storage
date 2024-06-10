@@ -20,14 +20,16 @@ import {
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/Components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { BASE_URL } from "@/app";
-import { useForm as useInertiaForm } from "@inertiajs/react";
+import { useForm as useInertiaForm, usePage } from "@inertiajs/react";
 import { useForm } from "react-hook-form";
 import { UploadFormdataProps } from "../interfaces/upload-formdata-props";
 import { InertiaFormProps } from "@/types/inertia-form";
+import { PageProps } from "@/types";
+import { isOnGroupPage } from "../utils";
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
@@ -40,11 +42,13 @@ const formSchema = z.object({
 export function UploadButton() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { data, setData, post, progress }: InertiaFormProps<UploadFormdataProps> = useInertiaForm<UploadFormdataProps>({
+  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
+  const { commons } = usePage<PageProps>().props;
+  const { data, setData, post, progress, reset, errors }: InertiaFormProps<UploadFormdataProps> = useInertiaForm<UploadFormdataProps>({
+    group_id:commons.selected_group? commons.selected_group.id:null,
     title: "",
     file: null,
   })
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,23 +61,26 @@ export function UploadButton() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const postUrl = BASE_URL + '/files/upload';
-    setData({
-      title:values.title,
-      file:values.file[0]
-    })
     try {
       post(postUrl, {
         onStart: () => setIsSubmitting(true),
         preserveScroll: true,
-
+        onSuccess: () => {
+          toast({
+            variant: "success",
+            title: "File Uploaded",
+            description: "Now everyone can view your file",
+          })
+          setIsFileDialogOpen(false);
+        },
+        onError: () => toast({
+          variant: "destructive",
+          title: "Something went wrong",
+          description: "Your file could not be uploaded, try again later",
+        })
       })
-      setIsFileDialogOpen(false);
 
-      toast({
-        variant: "success",
-        title: "File Uploaded",
-        description: "Now everyone can view your file",
-      });
+
     } catch (err) {
       toast({
         variant: "destructive",
@@ -83,24 +90,31 @@ export function UploadButton() {
     }
   }
 
-  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
+  function onChangeFile(e:React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files ? e.target.files[0]:null;
+    setData('file', file);
+    form.setValue('title', file?.name ?? '')
+  }
 
   return (
     <Dialog
       open={isFileDialogOpen}
       onOpenChange={(isOpen) => {
+        reset()
         setIsFileDialogOpen(isOpen);
-        setData({title:"", file:null});
+        setIsSubmitting(false)
       }}
     >
       <DialogTrigger asChild>
-        <Button>Upload File</Button>
+        <Button
+          disabled={!isOnGroupPage()}
+        >Upload File</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="mb-8">Upload your File Here</DialogTitle>
           <DialogDescription>
-            This file will be accessible by anyone in your organization
+            This file will be accessible by anyone in your Group
           </DialogDescription>
         </DialogHeader>
 
@@ -114,9 +128,10 @@ export function UploadButton() {
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} onBlur={e => setData('title', e.target.value)} />
                     </FormControl>
                     <FormMessage />
+                    {errors.title && <div className="text-red-700">{errors.title}</div>}
                   </FormItem>
                 )}
               />
@@ -128,9 +143,13 @@ export function UploadButton() {
                   <FormItem>
                     <FormLabel>File</FormLabel>
                     <FormControl>
-                      <Input type="file" {...fileRef} />
+                      <Input type="file" {...fileRef}  onChange={e => {
+                          onChangeFile(e)
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
+                    {errors.file && <div className="text-red-700">{errors.file}</div>}
                   </FormItem>
                 )}
               />

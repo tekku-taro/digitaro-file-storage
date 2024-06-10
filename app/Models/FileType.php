@@ -20,4 +20,12 @@ class FileType extends Model
     {
         return $this->hasMany(File::class);
     }
+
+    public static function getIdFromExtension(string $extension)
+    {
+        $fileType = self::where('mime', $extension)->first();
+        if($fileType) {
+            return $fileType->id;
+        }
+    }
 }

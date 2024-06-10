@@ -71,6 +71,12 @@ class FileTypeSeeder extends Seeder
                 'mimetype' => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 'mime' => "pptx",
             ],
+            [
+                'id' => 10,
+                'name' => "PDF",
+                'mimetype' => "application/pdf",
+                'mime' => "pdf",
+            ],
         ]);
     }
 }

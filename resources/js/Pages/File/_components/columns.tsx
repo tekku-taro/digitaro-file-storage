@@ -13,10 +13,7 @@ function UserCell() {
   const user = auth.user
   return (
     <div className="flex gap-2 text-xs text-gray-700 w-40 items-center">
-      <Avatar className="w-6 h-6">
-        <UserCircle2Icon />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
+      <UserCircle2Icon  className="w-6 h-6" />
       {user?.name}
     </div>
   );
@@ -24,8 +21,8 @@ function UserCell() {
 
 export const columns: ColumnDef<FileProps>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "title",
+    header: "Title",
   },
   {
     accessorKey: "file_type",

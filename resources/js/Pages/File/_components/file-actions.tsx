@@ -31,6 +31,7 @@ import { PageProps } from "@/types";
 import { InertiaFormProps } from "@/types/inertia-form";
 import {  FileIdFormdataProps } from "../interfaces/formdata-props";
 import { BASE_URL } from "@/app";
+import { isOnTrashPage } from "../utils";
 
 export function FileCardActions({
   file,
@@ -41,12 +42,12 @@ export function FileCardActions({
 }) {
   const { commons } = usePage<PageProps>().props
   const absoluteUrl = commons.upload_url + file.url
-
+  const onTrashPage = isOnTrashPage();
   const { toast } = useToast();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const { data, setData, put, delete: destroy, progress }: InertiaFormProps<FileIdFormdataProps> = useForm<FileIdFormdataProps>({
+  const { put, post, delete: destroy }: InertiaFormProps<FileIdFormdataProps> = useForm<FileIdFormdataProps>({
     fileId: null,
   })
 
@@ -55,22 +56,23 @@ export function FileCardActions({
   function toggleFavorite({fileId}:{fileId:string}) {
     let postUrl;
     if(isFavorited) {
-        postUrl = BASE_URL + '/unfavorites/' + fileId;
+        postUrl = BASE_URL + '/unfavorite/' + fileId;
+        destroy(postUrl, {
+          preserveScroll: true
+        })
       } else {
-        postUrl = BASE_URL + '/unfavorites/' + fileId;
+        postUrl = BASE_URL + '/favorite/' + fileId;
+        post(postUrl, {
+          preserveScroll: true
+        })
     }
-
-    setData('fileId', fileId)
-
-    put(postUrl, {
-      preserveScroll: true
-    })
   }
   function deleteFile({fileId}:{fileId:string}) {
-    const postUrl = BASE_URL + '/files/' + fileId + '/destroy';
-
-    setData('fileId', fileId)
-
+    const searchParams = new URLSearchParams();
+    if(onTrashPage) {
+      searchParams.set('hard_delete', '1');
+    }
+    const postUrl = BASE_URL + '/files/' + fileId + '?' + searchParams.toString();
     destroy(postUrl, {
       preserveScroll: true,
       onSuccess: () => toast({
@@ -85,6 +87,22 @@ export function FileCardActions({
       })
     })
   }
+  function restoreFile({fileId}:{fileId:string}) {
+    const postUrl = BASE_URL + '/files/' + fileId + '/restore';
+    put(postUrl, {
+      preserveScroll: true,
+      onSuccess: () => toast({
+        variant: "success",
+        title: "File restored",
+        description: "Your file has been restored",
+      }),
+      onError: () => toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "Your file could not be restored, try again later",
+      })
+    })
+  }
 
   return (
     <>
@@ -93,8 +111,11 @@ export function FileCardActions({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will mark the file for our deletion process. Files are
-              deleted periodically
+              {onTrashPage ? (
+                <span>This action will completely delete the file. Files can not be restored afterwords.</span>
+              ):(
+                <span>This action will mark the file for our deletion process. Files are deleted periodically</span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -147,27 +168,30 @@ export function FileCardActions({
           </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                if (file.is_trashed) {
-                //   restoreFile({
-                //     fileId: file._id,
-                //   });
-                } else {
-                  setIsConfirmOpen(true);
-                }
-              }}
-              className="flex gap-1 items-center cursor-pointer"
-            >
-              {file.is_trashed ? (
+            {file.is_trashed && (
+              <DropdownMenuItem
+                onClick={() => {
+                    restoreFile({
+                      fileId: file.id,
+                    });
+                }}
+                className="flex gap-1 items-center cursor-pointer"
+              >
                 <div className="flex gap-1 text-green-600 items-center cursor-pointer">
                   <UndoIcon className="w-4 h-4" /> Restore
                 </div>
-              ) : (
-                <div className="flex gap-1 text-red-600 items-center cursor-pointer">
-                  <TrashIcon className="w-4 h-4" /> Delete
-                </div>
-              )}
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuItem
+              onClick={() => {
+                setIsConfirmOpen(true);
+              }}
+              className="flex gap-1 items-center cursor-pointer"
+            >
+              <div className="flex gap-1 text-red-600 items-center cursor-pointer">
+                <TrashIcon className="w-4 h-4" /> Delete
+              </div>
             </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

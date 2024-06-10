@@ -2,7 +2,7 @@ import { UploadButton } from "./upload-button";
 import { FileCard } from "./file-card";
 import { GridIcon, Loader2, RowsIcon } from "lucide-react";
 import { SearchBar } from "./search-bar";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DataTable } from "./file-table";
 import { columns } from "./columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
@@ -14,10 +14,12 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { Label } from "@/Components/ui/label";
-import { usePage } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import { PageProps, User } from "@/types";
 import { FileProps } from "../interfaces/file-props";
 import { FileTypeProps } from "../interfaces/file-type-props";
+import { BASE_URL } from "@/app";
+import { useToast } from "@/Components/ui/use-toast";
 
 function Placeholder() {
   return (
@@ -26,7 +28,7 @@ function Placeholder() {
         alt="an image of a picture and directory icon"
         width="300"
         height="300"
-        src="/empty.svg"
+        src= {BASE_URL + "/images/empty.svg"}
       />
       <div className="text-2xl">You have no files, upload one now</div>
       <UploadButton />
@@ -43,13 +45,28 @@ export function FileBrowser({
   files: FileProps[];
   fileTypes: FileTypeProps[];
 }) {
-  const { auth } = usePage<PageProps>().props
-  const user = auth.user
   const [query, setQuery] = useState("");
   const [fileTypeId, setFileTypeId] = useState();
 
 
   const isLoading = files === undefined;
+  const hasBeenRendered = useRef(false);
+
+  useEffect(() => {
+    console.log(query, fileTypeId)
+    if(hasBeenRendered.current) {
+      router.reload({
+        data: {
+          file_type_id:fileTypeId,
+          search:query
+        }
+      })
+    }
+    hasBeenRendered.current = true
+    // return () => {
+    //   second
+    // }
+  }, [fileTypeId, query])
 
 
 
@@ -87,8 +104,9 @@ export function FileBrowser({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All</SelectItem>
                 {fileTypes.map(fileType => (
-                  <SelectItem value={fileType.id}>{fileType.name}</SelectItem>
+                  <SelectItem value={fileType.id} key={fileType.id}>{fileType.name}</SelectItem>
                 ))}
                 {/* <SelectItem value="all">All</SelectItem>
                 <SelectItem value="image">Image</SelectItem>
@@ -115,7 +133,7 @@ export function FileBrowser({
         </TabsContent>
         <TabsContent value="table">
           {/* @ts-ignore */}
-          <DataTable columns={columns} data={modifiedFiles} />
+          <DataTable columns={columns} data={files} />
         </TabsContent>
       </Tabs>
 
