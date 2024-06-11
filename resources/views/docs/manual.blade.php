@@ -6,7 +6,7 @@
 <title>manual</title>
 
 <link href='https://fonts.loli.net/css?family=Open+Sans:400italic,700italic,700,400&subset=latin,latin-ext' rel='stylesheet' type='text/css' />
-<link rel="stylesheet" href="{{ url('/') . asset('/css/manual.css') }}">
+<link rel="stylesheet" href="{{ asset('/css/manual.css') }}">
 
 </head>
 <body class='typora-export os-windows'>
