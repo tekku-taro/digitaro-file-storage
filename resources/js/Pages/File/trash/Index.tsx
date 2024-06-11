@@ -26,7 +26,7 @@ export default function TrashIndex({ auth, groups, files, fileTypes}: PageProps 
 
                     <div className="w-full">
                         <FileBrowser
-                          title={'Trashed Files'}
+                          title={'削除済みファイル一覧'}
                           files={files}
                           fileTypes={fileTypes}
                         />

@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
         User::factory()->count(1)->create([
             'name' => 'testuser',
             'email' => 'testuser@home.com',
+            'is_admin' => true,
             'password' => Hash::make('testuser'),
         ]);
     }

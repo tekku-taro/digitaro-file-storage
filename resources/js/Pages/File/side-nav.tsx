@@ -26,16 +26,6 @@ export function SideNav({groups}:{groups:GroupProps[]}) {
           </Button>
       </Link>
       ))}
-      {/* <Link href="/dashboard/files">
-        <Button
-          variant={"link"}
-          className={clsx("flex gap-2", {
-            "text-blue-500": route().current('files.index'),
-          })}
-        >
-          <FileIcon /> All Files
-        </Button>
-      </Link> */}
 
       <Link href={route('favorites.index')}>
         <Button
@@ -44,7 +34,7 @@ export function SideNav({groups}:{groups:GroupProps[]}) {
             "text-blue-500": route().current('favorites.index'),
           })}
         >
-          <StarIcon /> Favorites
+          <StarIcon /> お気に入り
         </Button>
       </Link>
 
@@ -55,7 +45,7 @@ export function SideNav({groups}:{groups:GroupProps[]}) {
             "text-blue-500": route().current('trash.index'),
           })}
         >
-          <TrashIcon /> Trash
+          <TrashIcon /> 削除済み
         </Button>
       </Link>
     </div>

@@ -21,7 +21,8 @@ export default {
           },
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Nunito', ...defaultTheme.fontFamily.sans],
+                Notoserif: ['Noto Serif JP'],
             },
             colors: {
                 border: "hsl(var(--border))",

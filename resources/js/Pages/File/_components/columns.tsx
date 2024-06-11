@@ -1,5 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { formatRelative } from "date-fns";
+import { format, formatRelative } from "date-fns";
+// import ja from 'date-fns/locale/ja'
+import { ja } from 'date-fns/locale';
 import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
 import { FileCardActions } from "./file-actions";
 import { usePage } from "@inertiajs/react";
@@ -22,34 +24,35 @@ function UserCell() {
 export const columns: ColumnDef<FileProps>[] = [
   {
     accessorKey: "title",
-    header: "Title",
+    header: "タイトル",
   },
   {
     accessorKey: "file_type",
-    header: "Type",
+    header: "ファイル種類",
     cell: ({ row }) => {
       const fileType:FileTypeProps = row.getValue("file_type");
       return <div>{fileType.name}</div>;
     },
   },
   {
-    header: "User",
+    header: "ユーザー",
     cell: ({ row }) => {
       return <UserCell />;
     },
   },
   {
-    header: "Uploaded On",
+    header: "アップロード日時",
     cell: ({ row }) => {
       return (
         <div>
-          {formatRelative(new Date(row.original.uploaded_at), new Date())}
+          {/* {format(new Date(row.original.uploaded_at), 'yyyy/MM/dd HH:mm')} */}
+          {formatRelative(new Date(row.original.uploaded_at), new Date(), { locale: ja })}
         </div>
       );
     },
   },
   {
-    header: "Actions",
+    header: "アクション",
     cell: ({ row }) => {
       return (
         <div>

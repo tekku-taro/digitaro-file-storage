@@ -27,7 +27,7 @@ export default function FileIndex({ auth, groups, files, fileTypes}: PageProps &
 
                     <div className="w-full">
                         <FileBrowser
-                          title={commons.selected_group?.name + ' Files'}
+                          title={commons.selected_group?.name + ' ファイル一覧'}
                           files={files}
                           fileTypes={fileTypes}
                         />

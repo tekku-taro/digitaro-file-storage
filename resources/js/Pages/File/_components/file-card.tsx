@@ -5,16 +5,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { formatRelative } from "date-fns";
+import { ja } from "date-fns/locale";
 
 import { ArchiveIcon, CircleUserRound, FileSpreadsheetIcon, FileTextIcon, FileXIcon, GanttChartIcon, ImageIcon } from "lucide-react";
-import { ReactElement, ReactNode, cloneElement } from "react";
+import { ReactElement, cloneElement } from "react";
 import { FileCardActions } from "./file-actions";
 import { FileProps } from "../interfaces/file-props";
 import { usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import { FileTypeProps } from "../interfaces/file-type-props";
 import { cn } from "@/lib/utils";
 
 
@@ -31,11 +30,9 @@ const typeIcons:Record<IconKeys, ReactElement> = {
 
 
 export function FileCard({
-  file,
-  fileTypes
+  file
 }: {
-  file: FileProps,
-  fileTypes: FileTypeProps[]
+  file: FileProps
 }) {
   const { auth, commons } = usePage<PageProps>().props
   const user = auth.user
@@ -65,7 +62,7 @@ export function FileCard({
           {user?.name}
         </div>
         <div className="text-xs text-gray-700">
-          Uploaded on {formatRelative(new Date(file.uploaded_at), new Date())}
+          アップロード日時 {formatRelative(new Date(file.uploaded_at), new Date(), {locale:ja})}
         </div>
       </CardFooter>
     </Card>

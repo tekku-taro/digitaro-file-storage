@@ -31,7 +31,7 @@ import { PageProps } from "@/types";
 import { InertiaFormProps } from "@/types/inertia-form";
 import {  FileIdFormdataProps } from "../interfaces/formdata-props";
 import { BASE_URL } from "@/app";
-import { isOnTrashPage } from "../utils";
+import { isOnTrashPage, isOwnFile } from "../utils";
 
 export function FileCardActions({
   file,
@@ -40,7 +40,7 @@ export function FileCardActions({
   file: FileProps;
   isFavorited: boolean;
 }) {
-  const { commons } = usePage<PageProps>().props
+  const { commons, auth } = usePage<PageProps>().props
   const absoluteUrl = commons.upload_url + file.url
   const onTrashPage = isOnTrashPage();
   const { toast } = useToast();
@@ -75,15 +75,27 @@ export function FileCardActions({
     const postUrl = BASE_URL + '/files/' + fileId + '?' + searchParams.toString();
     destroy(postUrl, {
       preserveScroll: true,
-      onSuccess: () => toast({
-        variant: "default",
-        title: "File marked for deletion",
-        description: "Your file will be deleted soon",
-      }),
+      onSuccess: () => {
+        if(onTrashPage) {
+          toast({
+            variant: "default",
+            title: "ファイルが削除されました。",
+            description: "ファイルがシステムから完全に削除されました。",
+          });
+        } else {
+          toast({
+            variant: "default",
+            title: "ファイルが削除済みとして設定されました。",
+            description: "削除済みファイルは復元できます。",
+          });
+        }
+
+      }
+      ,
       onError: () => toast({
         variant: "destructive",
-        title: "Something went wrong",
-        description: "Your file could not be deleted, try again later",
+        title: "問題が発生しました",
+        description: "ファイルを削除できませんでした。後でもう一度お試しください。",
       })
     })
   }
@@ -93,13 +105,13 @@ export function FileCardActions({
       preserveScroll: true,
       onSuccess: () => toast({
         variant: "success",
-        title: "File restored",
-        description: "Your file has been restored",
+        title: "ファイルの復元",
+        description: "ファイルが復元されました。",
       }),
       onError: () => toast({
         variant: "destructive",
-        title: "Something went wrong",
-        description: "Your file could not be restored, try again later",
+        title: "問題が発生しました",
+        description: "ファイルを復元できませんでした。後でもう一度お試しください。",
       })
     })
   }
@@ -109,17 +121,17 @@ export function FileCardActions({
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>本当に実行してもよろしいですか？</AlertDialogTitle>
             <AlertDialogDescription>
               {onTrashPage ? (
-                <span>This action will completely delete the file. Files can not be restored afterwords.</span>
+                <span>この操作はファイルを完全に削除します。ファイルはその後復元できません。</span>
               ):(
-                <span>This action will mark the file for our deletion process. Files are deleted periodically</span>
+                <span>この操作により、ファイルは削除済みとして設定されます。ファイルはあとで復元可能です。</span>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 deleteFile({
@@ -127,7 +139,7 @@ export function FileCardActions({
                 });
               }}
             >
-              Continue
+              実行
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -145,7 +157,7 @@ export function FileCardActions({
             }}
             className="flex gap-1 items-center cursor-pointer"
           >
-            <FileIcon className="w-4 h-4" /> Download
+            <FileIcon className="w-4 h-4" /> ダウンロード
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -158,41 +170,44 @@ export function FileCardActions({
           >
             {isFavorited ? (
               <div className="flex gap-1 items-center">
-                <StarIcon className="w-4 h-4" /> Unfavorite
+                <StarIcon className="w-4 h-4" /> お気に入り削除
               </div>
             ) : (
               <div className="flex gap-1 items-center">
-                <StarHalf className="w-4 h-4" /> Favorite
+                <StarHalf className="w-4 h-4" /> お気に入り追加
               </div>
             )}
           </DropdownMenuItem>
+          {isOwnFile(file, auth.user) ? (
+            <>
+              <DropdownMenuSeparator />
+              {file.is_trashed && (
+                <DropdownMenuItem
+                  onClick={() => {
+                      restoreFile({
+                        fileId: file.id,
+                      });
+                  }}
+                  className="flex gap-1 items-center cursor-pointer"
+                >
+                  <div className="flex gap-1 text-green-600 items-center cursor-pointer">
+                    <UndoIcon className="w-4 h-4" /> ファイルの復元
+                  </div>
+                </DropdownMenuItem>
+              )}
 
-            <DropdownMenuSeparator />
-            {file.is_trashed && (
               <DropdownMenuItem
                 onClick={() => {
-                    restoreFile({
-                      fileId: file.id,
-                    });
+                  setIsConfirmOpen(true);
                 }}
                 className="flex gap-1 items-center cursor-pointer"
               >
-                <div className="flex gap-1 text-green-600 items-center cursor-pointer">
-                  <UndoIcon className="w-4 h-4" /> Restore
+                <div className="flex gap-1 text-red-600 items-center cursor-pointer">
+                  <TrashIcon className="w-4 h-4" /> 削除
                 </div>
               </DropdownMenuItem>
-            )}
-
-            <DropdownMenuItem
-              onClick={() => {
-                setIsConfirmOpen(true);
-              }}
-              className="flex gap-1 items-center cursor-pointer"
-            >
-              <div className="flex gap-1 text-red-600 items-center cursor-pointer">
-                <TrashIcon className="w-4 h-4" /> Delete
-              </div>
-            </DropdownMenuItem>
+            </> ): null
+          }
         </DropdownMenuContent>
       </DropdownMenu>
     </>

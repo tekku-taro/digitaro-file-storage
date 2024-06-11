@@ -78,6 +78,9 @@ class FilesController extends Controller
     public function trash(Request $request)
     {
         $query = File::query();
+        if(!Auth::user()->is_admin) {
+            $query->where('user_id', Auth::id());
+        }
 
         $query->onlyTrashed();
 
@@ -125,7 +128,7 @@ class FilesController extends Controller
         ],
             [
                 'file' => 'アップロードできるファイルの種類は（' .implode(',', $mimeTypes).'）のみです。',
-                'group_id' => 'ファイルアップロードはグループのファイル一覧画面で実行してください。'
+                'group_id' => 'ファイルアップロードはグループのファイル一覧画面で実行してください。',
             ]
         );
 

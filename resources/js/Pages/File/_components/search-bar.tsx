@@ -15,7 +15,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
-  query: z.string().min(0).max(200),
+  query: z.string().min(0).max(200, "200文字以下で入力してください"),
 });
 
 export function SearchBar({
@@ -49,7 +49,7 @@ export function SearchBar({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} placeholder="your file names" />
+                  <Input {...field} placeholder="タイトルで検索..." />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -65,7 +65,7 @@ export function SearchBar({
             {form.formState.isSubmitting && (
               <Loader2 className="h-4 w-4 animate-spin" />
             )}
-            <SearchIcon /> Search
+            <SearchIcon /> 検索
           </Button>
         </form>
       </Form>

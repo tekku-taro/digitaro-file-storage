@@ -26,7 +26,7 @@ export default function FavoriteIndex({ auth, groups, files, fileTypes}: PagePro
 
                     <div className="w-full">
                         <FileBrowser
-                          title={'Favorite Files'}
+                          title={'お気に入りファイル一覧'}
                           files={files}
                           fileTypes={fileTypes}
                         />

@@ -19,7 +19,7 @@ import { PageProps, User } from "@/types";
 import { FileProps } from "../interfaces/file-props";
 import { FileTypeProps } from "../interfaces/file-type-props";
 import { BASE_URL } from "@/app";
-import { useToast } from "@/Components/ui/use-toast";
+import { isOnGroupPage } from "../utils";
 
 function Placeholder() {
   return (
@@ -30,8 +30,14 @@ function Placeholder() {
         height="300"
         src= {BASE_URL + "/images/empty.svg"}
       />
-      <div className="text-2xl">You have no files, upload one now</div>
-      <UploadButton />
+      {isOnGroupPage() ? (
+        <>
+          <div className="text-2xl">ファイルがありません。アップロードして下さい。</div>
+          <UploadButton />
+        </>
+      ):(
+        <div className="text-2xl">該当するファイルがありません。</div>
+      )}
     </div>
   );
 }
@@ -85,15 +91,15 @@ export function FileBrowser({
           <TabsList className="mb-2">
             <TabsTrigger value="grid" className="flex gap-2 items-center">
               <GridIcon />
-              Grid
+              カード表示
             </TabsTrigger>
             <TabsTrigger value="table" className="flex gap-2 items-center">
-              <RowsIcon /> Table
+              <RowsIcon /> テーブル表示
             </TabsTrigger>
           </TabsList>
 
           <div className="flex gap-2 items-center">
-            <Label htmlFor="type-select">Type Filter</Label>
+            <Label htmlFor="type-select">ファイル種類で絞込</Label>
             <Select
               value={fileTypeId}
               onValueChange={(newTypeId) => {
@@ -108,10 +114,6 @@ export function FileBrowser({
                 {fileTypes.map(fileType => (
                   <SelectItem value={fileType.id} key={fileType.id}>{fileType.name}</SelectItem>
                 ))}
-                {/* <SelectItem value="all">All</SelectItem>
-                <SelectItem value="image">Image</SelectItem>
-                <SelectItem value="csv">CSV</SelectItem>
-                <SelectItem value="pdf">PDF</SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -120,14 +122,14 @@ export function FileBrowser({
         {isLoading && (
           <div className="flex flex-col gap-8 w-full items-center mt-24">
             <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
-            <div className="text-2xl">Loading your files...</div>
+            <div className="text-2xl">ファイルのロード中...</div>
           </div>
         )}
 
         <TabsContent value="grid">
           <div className="grid grid-cols-3 gap-4">
             {files?.map((file) => {
-              return <FileCard key={file.id} file={file} fileTypes={fileTypes} />;
+              return <FileCard key={file.id} file={file} />;
             })}
           </div>
         </TabsContent>
