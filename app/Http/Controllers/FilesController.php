@@ -34,7 +34,7 @@ class FilesController extends Controller
         if($request->has('search')) {
             $query->where('title', 'LIKE', '%' . $request->search . '%');
         }
-        $files = $query->with(['fileType'])->withCount(['favoriteUsers' => function($query) {
+        $files = $query->with(['fileType', 'user'])->withCount(['favoriteUsers' => function($query) {
             $query->where('user_id', Auth::id());
         }])->get();
 
@@ -63,7 +63,7 @@ class FilesController extends Controller
         if($request->has('search')) {
             $query->where('title', 'LIKE', '%' . $request->search . '%');
         }
-        $files = $query->with(['fileType'])->withCount(['favoriteUsers' => function($query) {
+        $files = $query->with(['fileType', 'user'])->withCount(['favoriteUsers' => function($query) {
             $query->where('user_id', Auth::id());
         }])->get();
 
@@ -93,7 +93,7 @@ class FilesController extends Controller
         if($request->has('search')) {
             $query->where('title', 'LIKE', '%' . $request->search . '%');
         }
-        $files = $query->with(['fileType'])->withCount(['favoriteUsers' => function($query) {
+        $files = $query->with(['fileType', 'user'])->withCount(['favoriteUsers' => function($query) {
             $query->where('user_id', Auth::id());
         }])->get();
 

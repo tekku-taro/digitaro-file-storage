@@ -1,3 +1,4 @@
+import { User } from "@/types";
 import { FileTypeProps } from "./file-type-props";
 
 export interface FileProps {
@@ -11,4 +12,5 @@ export interface FileProps {
     uploaded_at:string;
     favorite_users_count:number;
     is_trashed:boolean;
+    user:User;
 }
