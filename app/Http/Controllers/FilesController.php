@@ -25,6 +25,8 @@ class FilesController extends Controller
 
         if($request->has('group_id')) {
             $query->where('group_id', $request->group_id);
+        } else {
+            $query->where('group_id', Auth::user()->userGroups->first()?->id);
         }
         if($request->has('file_type_id') && $request->file_type_id != 'all') {
             $query->where('file_type_id', $request->file_type_id);
