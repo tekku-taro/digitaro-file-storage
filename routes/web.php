@@ -27,6 +27,11 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+
+Route::get('/manual', function () {
+    return view('docs.manual');
+})->middleware(['auth', 'verified'])->name('manual');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
