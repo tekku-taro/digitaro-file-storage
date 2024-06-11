@@ -96,8 +96,9 @@ export function UploadButton() {
 
   function onChangeFile(e:React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files ? e.target.files[0]:null;
-    setData('file', file);
     form.setValue('title', file?.name ?? '')
+    setData(data => ({ ...data, title: file?.name ?? ''}));
+    setData(data => ({ ...data, file: file}));
   }
 
   return (
@@ -134,7 +135,7 @@ export function UploadButton() {
                   <FormItem>
                     <FormLabel>タイトル</FormLabel>
                     <FormControl>
-                      <Input {...field} onBlur={e => setData('title', e.target.value)} />
+                      <Input {...field} onChange={e => setData('title', e.target.value)} />
                     </FormControl>
                     <FormMessage />
                     {errors.title && <div className="text-red-700">{errors.title}</div>}
