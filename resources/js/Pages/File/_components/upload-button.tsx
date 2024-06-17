@@ -63,6 +63,7 @@ export function UploadButton() {
     const file = values.file[0];
     try {
       setIsSubmitting(true)
+      setProgress({percentage:1})
       const chunkSize = 1024  * 1024 * 4;
       const chunks = Math.ceil(file.size / chunkSize);
       for (let i = 0; i < chunks; i++) {
