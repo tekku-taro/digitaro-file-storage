@@ -6,11 +6,13 @@ use App\Models\DownloadHistory;
 use App\Models\File;
 use App\Models\FileType;
 use App\Models\Group;
+use App\Support\ChunkUploadService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File as RulesFile;
 use Inertia\Inertia;
 
@@ -110,47 +112,57 @@ class FilesController extends Controller
     public function upload(Request $request)
     {
         // dd($request->all());
-        try {
-            DB::transaction(function () {
-
-            });
-        } catch (\Throwable $th) {
-            return response()->json([
-                'result' => 'failure',
-                'message' => $th->getMessage(),
-            ]);
-        }
-
-        $mimeTypes = FileType::pluck('mime')->toArray();
-        // dd($request->all());
         $validated = $request->validate([
+            'is_last_chunk' => ['required', 'boolean'],
             'group_id' => 'required|integer|exists:groups,id',
             'title' => 'required',
-            'file' => ['required', RulesFile::types($mimeTypes)],
-        ],
-            [
-                'file' => 'アップロードできるファイルの種類は（' .implode(',', $mimeTypes).'）のみです。',
-                'group_id' => 'ファイルアップロードはグループのファイル一覧画面で実行してください。',
-            ]
+        ]);
+        $group = Group::find($validated['group_id']);
+
+        $chunkupload = new ChunkUploadService(
+            file: request()->file,
+            isLastChunk: $validated['is_last_chunk'],
+            documentPath: $group->name,
+            nonce: $request->session()->token()
         );
 
-        $group = Group::find($validated['group_id']);
-        $uploadedFile = $request->file('file');
-        $fileName = $uploadedFile->getClientOriginalName();
-        $storage = Storage::disk('uploads');
-        $path = $storage->putFileAs($group->name, $uploadedFile, $fileName);
+        try {
+            $path = $chunkupload->merge();
 
+            if ($path) {
+                $mimeTypes = FileType::pluck('mime')->toArray();
+                $request->merge(['file' => $chunkupload->getMergedFile()]);
 
-        File::create([
-            'group_id' => $validated['group_id'],
-            'user_id' => Auth::id(),
-            'title' => $validated['title'],
-            'file_type_id' => FileType::getIdFromExtension($uploadedFile->extension()),
-            'url' => $path,
-            'uploaded_at' => Carbon::now(),
-        ]);
+                $validatedFile = Validator::make(
+                    ['file' => $chunkupload->getMergedFile()],
+                    ['file' => ['required', RulesFile::types($mimeTypes)],],
+                    [
+                        'file' => 'アップロードできるファイルの種類は（' .implode(',', $mimeTypes).'）のみです。',
+                        'group_id' => 'ファイルアップロードはグループのファイル一覧画面で実行してください。',
+                    ]
+                )->validate();
 
-        return back();
+                File::create([
+                    'group_id' => $validated['group_id'],
+                    'user_id' => Auth::id(),
+                    'title' => $validated['title'],
+                    'file_type_id' => FileType::getIdFromExtension($validatedFile['file']->extension()),
+                    'url' => $path,
+                    'uploaded_at' => Carbon::now(),
+                ]);
+
+                return response()->json([
+                'complete' => true,
+                ]);
+            }
+
+            return response()->json([
+                'complete' => false,
+            ]);
+        } catch (\Exception $e) {
+            $chunkupload->deleteChunk();
+            throw $e;
+        }
     }
 
     /**

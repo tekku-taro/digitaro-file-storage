@@ -20,19 +20,19 @@ import {
 import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/Components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { BASE_URL } from "@/app";
-import { useForm as useInertiaForm, usePage } from "@inertiajs/react";
+import { usePage, router } from "@inertiajs/react";
 import { useForm } from "react-hook-form";
-import { UploadFormdataProps } from "../interfaces/upload-formdata-props";
-import { InertiaFormProps } from "@/types/inertia-form";
 import { PageProps } from "@/types";
 import { isOnGroupPage } from "../utils";
+import axios from "axios";
 
 const formSchema = z.object({
   title: z.string().min(1, "1文字以上で入力してください").max(200, "200文字以下で入力してください"),
+  group_id:z.number(),
   file: z
     .custom<FileList>((val) => val instanceof FileList, "ファイルを選択して下さい")
     .refine((files) => files.length > 0, `ファイルを選択して下さい`),
@@ -44,52 +44,63 @@ export function UploadButton() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
   const { commons } = usePage<PageProps>().props;
-  const { data, setData, post, progress, reset, errors }: InertiaFormProps<UploadFormdataProps> = useInertiaForm<UploadFormdataProps>({
-    group_id:commons.selected_group? commons.selected_group.id:null,
-    title: "",
-    file: null,
-  })
+  const [progress, setProgress] = useState({percentage:0})
+  const [errors, setErrors] = useState({title:null, file:null})
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
+      group_id:commons.selected_group? commons.selected_group.id:undefined,
       file: undefined,
     },
   });
 
   const fileRef = form.register("file");
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // サイズの大きいファイルに対応
     const postUrl = BASE_URL + '/files/upload';
+    const file = values.file[0];
     try {
-      post(postUrl, {
-        onStart: () => setIsSubmitting(true),
-        preserveScroll: true,
-        onSuccess: () => {
-          toast({
-            variant: "success",
-            title: "アップロード完了",
-            description: "ファイルがアップロードされました。",
-          })
-          setIsFileDialogOpen(false);
-        },
-        onError: () => {
-          toast({
-            variant: "destructive",
-            title: "問題が発生しました",
-            description: "ファイルをアップロードできませんでした。後でもう一度お試しください。",
-          })
-          setIsSubmitting(false)
-        }
-      })
+      setIsSubmitting(true)
+      const chunkSize = 1024  * 1024 * 4;
+      const chunks = Math.ceil(file.size / chunkSize);
+      for (let i = 0; i < chunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(file.size, start + chunkSize);
+        const chunk = file.slice(start, end);
 
+        const formData = new FormData();
+        formData.append('file', chunk, file.name);
+        formData.append('title', values.title);
+        formData.append('group_id', String(values.group_id));
+        formData.append('is_last_chunk', i === (chunks - 1) ? '1' : '0');
+        await axios.post(postUrl, formData);
+        setProgress((progress) => ({
+          percentage: progress.percentage + chunkSize/ file.size * 100
+        }))
+
+      }
+      router.reload();
+      toast({
+        variant: "success",
+        title: "アップロード完了",
+        description: "ファイルがアップロードされました。",
+      })
+      setIsFileDialogOpen(false);
 
     } catch (err) {
+      console.log(err)
+      if (axios.isAxiosError(err) && err.response)  {
+        setErrors(err.response.data.errors)
+        // Access to config, request, and response
+      }
+      router.reload();
       toast({
         variant: "destructive",
-        title: "Something went wrong",
-        description: "Your file could not be uploaded, try again later",
-      });
+        title: "問題が発生しました",
+        description: "ファイルをアップロードできませんでした。後でもう一度お試しください。",
+      })
       setIsSubmitting(false)
     }
   }
@@ -97,18 +108,22 @@ export function UploadButton() {
   function onChangeFile(e:React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files ? e.target.files[0]:null;
     form.setValue('title', file?.name ?? '')
-    setData(data => ({ ...data, title: file?.name ?? ''}));
-    setData(data => ({ ...data, file: file}));
+  }
+
+  function clearErrors() {
+    form.clearErrors()
+    setErrors({title:null, file:null})
   }
 
   return (
     <Dialog
       open={isFileDialogOpen}
       onOpenChange={(isOpen) => {
-        reset()
-        form.clearErrors()
+        form.reset()
+        clearErrors()
         setIsFileDialogOpen(isOpen);
         setIsSubmitting(false)
+        setProgress({percentage:0})
       }}
     >
       <DialogTrigger asChild>
@@ -135,7 +150,7 @@ export function UploadButton() {
                   <FormItem>
                     <FormLabel>タイトル</FormLabel>
                     <FormControl>
-                      <Input {...field} onChange={e => setData('title', e.target.value)} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                     {errors.title && <div className="text-red-700">{errors.title}</div>}
@@ -160,11 +175,11 @@ export function UploadButton() {
                   </FormItem>
                 )}
               />
-              {progress && (
-                <progress value={progress.percentage} max="100">
+              {progress.percentage > 0 ? (
+                <progress className="w-full" value={progress.percentage} max="100">
                   {progress.percentage}%
                 </progress>
-              )}
+              ) : ''}
               <Button
                 type="submit"
                 disabled={isSubmitting}

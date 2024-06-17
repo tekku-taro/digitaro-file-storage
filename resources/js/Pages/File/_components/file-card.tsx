@@ -36,14 +36,14 @@ export function FileCard({
 }) {
   const { auth, commons } = usePage<PageProps>().props
   const user = auth.user
-  const mime = file.file_type.mime;
+  const mime = file.file_type?.mime;
   const absoluteUrl = commons.upload_url + file.url
   const {symbol, iconElem} = getIcons(mime)
   const lgIconElem = cloneElement(iconElem, {  className: cn(iconElem.props.className, "w-20 h-20")});
   return (
     <Card>
       <CardHeader className="relative">
-        <CardTitle className="flex gap-2 text-base font-normal">
+        <CardTitle className="flex gap-2 text-base font-normal truncate">
           <div className="flex justify-center">{iconElem}</div>{" "}
           {file.title}
         </CardTitle>
