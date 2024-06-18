@@ -6,6 +6,8 @@ use App\Models\DownloadHistory;
 use App\Models\File;
 use App\Models\FileType;
 use App\Models\Group;
+use App\Rules\AcceptableFileTypes;
+use App\Rules\UploadsCapacity;
 use App\Support\ChunkUploadService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -130,14 +132,12 @@ class FilesController extends Controller
             $path = $chunkupload->merge();
 
             if ($path) {
-                $mimeTypes = FileType::pluck('mime')->toArray();
-                $request->merge(['file' => $chunkupload->getMergedFile()]);
+                $mergedFile = $chunkupload->getMergedFile();
 
                 $validatedFile = Validator::make(
-                    ['file' => $chunkupload->getMergedFile()],
-                    ['file' => ['required', RulesFile::types($mimeTypes)],],
+                    ['file' => $mergedFile],
+                    ['file' => ['required', new AcceptableFileTypes, new UploadsCapacity]],
                     [
-                        'file' => 'アップロードできるファイルの種類は（' .implode(',', $mimeTypes).'）のみです。',
                         'group_id' => 'ファイルアップロードはグループのファイル一覧画面で実行してください。',
                     ]
                 )->validate();
@@ -148,6 +148,7 @@ class FilesController extends Controller
                     'title' => $validated['title'],
                     'file_type_id' => FileType::getIdFromExtension($validatedFile['file']->extension()),
                     'url' => $path,
+                    'size' => $mergedFile->getSize(),
                     'uploaded_at' => Carbon::now(),
                 ]);
 
@@ -161,6 +162,7 @@ class FilesController extends Controller
             ]);
         } catch (\Exception $e) {
             $chunkupload->deleteChunk();
+            $chunkupload->deleteStorageFile();
             throw $e;
         }
     }
