@@ -11,6 +11,13 @@ export interface Group {
     notes: string;
 }
 
+export interface StorageStatus {
+    capacity: number;
+    usedVolume: number;
+    rate: number;
+    legend: string;
+}
+
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User;
@@ -18,5 +25,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     commons: {
         upload_url: string;
         selected_group: Group|null;
+        storage_status: StorageStatus;
+        chunk_upload_size: number;
     };
 };

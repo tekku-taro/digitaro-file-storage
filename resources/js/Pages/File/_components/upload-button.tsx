@@ -64,8 +64,7 @@ export function UploadButton() {
     try {
       setIsSubmitting(true)
       setProgress({percentage:1})
-      const uploadSize = import.meta.env.VITE_CHUNK_UPLOAD_SIZE;
-      const chunkSize = uploadSize ? parseInt(uploadSize): 1024  * 1024 * 4;
+      const chunkSize = commons.chunk_upload_size
       const chunks = Math.ceil(file.size / chunkSize);
       for (let i = 0; i < chunks; i++) {
         const start = i * chunkSize;

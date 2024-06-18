@@ -3,13 +3,20 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link } from '@inertiajs/react';
-import { User } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import { PageProps, User } from '@/types';
 import { CircleUserRound } from 'lucide-react';
 import { Toaster } from "@/Components/ui/toaster"
+import { Progress, ProgressFillType } from '@/Components/ui/progress';
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { commons } = usePage<PageProps>().props
+    console.log(commons.storage_status)
+    let progressFill:ProgressFillType = 'success';
+    if(commons.storage_status.rate > 90) {
+        progressFill = 'destructive';
+    }
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -28,6 +35,13 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                     Digitaro File Storage
                                 </NavLink>
                             </div>
+                        </div>
+
+                        <div className='w-1/3 flex justify-between items-center gap-3'>
+                            <Progress className="w-1/2 h-5" fill={progressFill} value={commons.storage_status.rate > 100 ? 100 : commons.storage_status.rate}>
+                                {commons.storage_status.rate}
+                            </Progress>
+                            <span>{commons.storage_status.legend}</span>
                         </div>
 
                         <div className="hidden sm:flex sm:items-center sm:ms-6">

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Group;
+use App\Support\UploadSpaceManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -40,6 +41,8 @@ class HandleInertiaRequests extends Middleware
             'commons' => [
                 'upload_url' => Storage::disk('uploads')->url(''),
                 'selected_group' => Group::find($request->group_id) ?? Auth::user()?->userGroups->first(),
+                'storage_status' => UploadSpaceManager::getCurrentStorageStatus(),
+                'chunk_upload_size' => \ByteUnits\parse(config('upload.chunk_upload_size'))->numberOfBytes(),
             ],
         ];
     }
