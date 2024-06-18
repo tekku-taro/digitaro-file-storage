@@ -25,7 +25,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     commons: {
         upload_url: string;
         selected_group: Group|null;
-        storage_status: StorageStatus;
+        storage_status: StorageStatus|null;
         chunk_upload_size: number;
     };
 };

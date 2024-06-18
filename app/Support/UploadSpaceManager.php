@@ -9,7 +9,11 @@ class UploadSpaceManager
 {
     public static function getCurrentStorageStatus()
     {
-        $maxCapacity = \ByteUnits\parse(config('upload.max_storage_capacity'));
+        $configMaxCapacity = config('upload.max_storage_capacity');
+        if(!$configMaxCapacity) {
+            return;
+        }
+        $maxCapacity = \ByteUnits\parse($configMaxCapacity);
 
         return new CurrentStorageStatus($maxCapacity, \ByteUnits\parse(self::getUploadsFolderSize()));
     }
@@ -20,7 +24,11 @@ class UploadSpaceManager
         if($fileSize === false) {
             return false;
         }
-        $maxCapacity = \ByteUnits\parse(config('upload.max_storage_capacity'));
+        $configMaxCapacity = config('upload.max_storage_capacity');
+        if(!$configMaxCapacity) {
+            return false;
+        }
+        $maxCapacity = \ByteUnits\parse($configMaxCapacity);
         $newFolderSize = self::getUploadsFolderSize() + $fileSize;
         if($maxCapacity->isLessThan(\ByteUnits\Binary::bytes($newFolderSize))) {
             return true;

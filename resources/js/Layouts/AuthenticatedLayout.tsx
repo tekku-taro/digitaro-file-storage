@@ -14,8 +14,10 @@ export default function Authenticated({ user, header, children }: PropsWithChild
     const { commons } = usePage<PageProps>().props
     console.log(commons.storage_status)
     let progressFill:ProgressFillType = 'success';
-    if(commons.storage_status.rate > 90) {
-        progressFill = 'destructive';
+    if(commons.storage_status) {
+        if(commons.storage_status.rate > 90) {
+            progressFill = 'destructive';
+        }
     }
 
     return (
@@ -36,13 +38,14 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 </NavLink>
                             </div>
                         </div>
-
-                        <div className='w-1/3 flex justify-between items-center gap-3'>
-                            <Progress className="w-1/2 h-5" fill={progressFill} value={commons.storage_status.rate > 100 ? 100 : commons.storage_status.rate}>
-                                {commons.storage_status.rate}
-                            </Progress>
-                            <span>{commons.storage_status.legend}</span>
-                        </div>
+                        {commons.storage_status && (
+                            <div className='w-1/3 flex justify-between items-center gap-3'>
+                                <Progress className="w-1/2 h-5" fill={progressFill} value={commons.storage_status.rate > 100 ? 100 : commons.storage_status.rate}>
+                                    {commons.storage_status.rate}
+                                </Progress>
+                                <span>{commons.storage_status.legend}</span>
+                            </div>
+                        )}
 
                         <div className="hidden sm:flex sm:items-center sm:ms-6">
                             <div className="ms-3 relative">
