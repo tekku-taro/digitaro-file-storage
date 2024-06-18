@@ -17,6 +17,7 @@ class File extends Model
         'file_type_id',
         'title',
         'url',
+        'size',
         'uploaded_at',
 	];
 
@@ -25,7 +26,7 @@ class File extends Model
      *
      * @var array
      */
-    protected $appends = ['is_trashed'];
+    protected $appends = ['is_trashed','format_size'];
 
     /**
      * 表示用更新日
@@ -37,6 +38,24 @@ class File extends Model
         return Attribute::make(
             get: function ($value, $attributes) {
                 return $this->trashed();
+            }
+        );
+    }
+
+    /**
+     * 表示用更新日
+     *
+     * @return  \Illuminate\Database\Eloquent\Casts\Attribute
+     */
+    public function formatSize(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                if(!is_integer($attributes['size'])) {
+                    return '';
+                }
+                $size = \ByteUnits\Binary::bytes($attributes['size']);
+                return $size->format();
             }
         );
     }

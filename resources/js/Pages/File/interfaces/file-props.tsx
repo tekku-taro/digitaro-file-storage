@@ -9,6 +9,7 @@ export interface FileProps {
     file_type:FileTypeProps;
     title:string;
     url:string;
+    format_size:number;
     uploaded_at:string;
     favorite_users_count:number;
     is_trashed:boolean;

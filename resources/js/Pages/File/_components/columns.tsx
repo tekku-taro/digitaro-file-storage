@@ -37,6 +37,10 @@ export const columns: ColumnDef<FileProps>[] = [
     },
   },
   {
+    accessorKey: "format_size",
+    header: "サイズ",
+  },
+  {
     header: "ユーザー",
     cell: ({ row }) => {
       return <UserCell user={row.original.user} />;
