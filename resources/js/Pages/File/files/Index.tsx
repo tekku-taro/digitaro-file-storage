@@ -21,8 +21,8 @@ export default function FileIndex({ auth, groups, files, fileTypes}: PageProps &
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
         >
             <Head title="Dashboard" />
-            <main className="container mx-auto pt-12 min-h-screen">
-                <div className="flex gap-8">
+            <div className="container mx-auto pt-8 sm:pt-12 min-h-screen pl-1 pr-4 sm:px-8">
+                <div className="flex gap-2 sm:gap-8 mb-5">
                     <SideNav groups={groups} />
 
                     <div className="w-full">
@@ -33,7 +33,7 @@ export default function FileIndex({ auth, groups, files, fileTypes}: PageProps &
                         />
                     </div>
                 </div>
-            </main>
+            </div>
         </AuthenticatedLayout>
     );
 }

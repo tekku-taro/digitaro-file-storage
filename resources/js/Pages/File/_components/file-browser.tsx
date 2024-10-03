@@ -20,6 +20,8 @@ import { FileProps } from "../interfaces/file-props";
 import { FileTypeProps } from "../interfaces/file-type-props";
 import { BASE_URL } from "@/app";
 import { isOnGroupPage } from "../utils";
+import { useMediaQuery } from "@/Hooks/useMediaQuery";
+import FileFilter from "./file-filter";
 
 function Placeholder() {
   return (
@@ -52,7 +54,8 @@ export function FileBrowser({
   fileTypes: FileTypeProps[];
 }) {
   const [query, setQuery] = useState("");
-  const [fileTypeId, setFileTypeId] = useState();
+  const [fileTypeId, setFileTypeId] = useState<string>();
+  const isSm = useMediaQuery("(min-width: 640px)")
 
 
   const isLoading = files === undefined;
@@ -78,66 +81,76 @@ export function FileBrowser({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">{title}</h1>
+      <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center mb-8">
+        <h1 className="text-xl sm:text-4xl font-bold">{title}</h1>
 
         <SearchBar query={query} setQuery={setQuery} />
 
         <UploadButton />
       </div>
 
-      <Tabs defaultValue="grid">
-        <div className="flex justify-between items-center">
-          <TabsList className="mb-2">
-            <TabsTrigger value="grid" className="flex gap-2 items-center">
-              <GridIcon />
-              カード表示
-            </TabsTrigger>
-            <TabsTrigger value="table" className="flex gap-2 items-center">
-              <RowsIcon /> テーブル表示
-            </TabsTrigger>
-          </TabsList>
+      {isSm ? (
+        <Tabs defaultValue="grid">
+          <div className="flex justify-between items-center mb-2">
+            <TabsList>
+              <TabsTrigger value="grid" className="flex gap-2 items-center">
+                <GridIcon />
+                <span className="hidden sm:inline">カード表示</span>
+              </TabsTrigger>
+              <TabsTrigger value="table" className="flex gap-2 items-center">
+                <RowsIcon />
+                <span className="hidden sm:inline">テーブル表示</span>
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="flex gap-2 items-center">
-            <Label htmlFor="type-select">ファイル種類で絞込</Label>
-            <Select
-              value={fileTypeId}
-              onValueChange={(newTypeId) => {
-                setFileTypeId(newTypeId as any);
-              }}
-            >
-              <SelectTrigger id="type-select" className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {fileTypes.map(fileType => (
-                  <SelectItem value={fileType.id} key={fileType.id}>{fileType.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FileFilter
+              fileTypeId={fileTypeId}
+              setFileTypeId={setFileTypeId}
+              fileTypes={fileTypes}
+            />
           </div>
+
+          {isLoading && (
+            <div className="flex flex-col gap-8 w-full items-center mt-24">
+              <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
+              <div className="text-2xl">ファイルのロード中...</div>
+            </div>
+          )}
+
+          <TabsContent value="grid">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {files?.map((file) => {
+                return <FileCard key={file.id} file={file} />;
+              })}
+            </div>
+          </TabsContent>
+          <TabsContent value="table">
+            {/* @ts-ignore */}
+            <DataTable columns={columns} data={files} />
+          </TabsContent>
+        </Tabs>
+      ): (
+        <>
+          <div className="flex justify-between items-center mb-3">
+            <FileFilter
+              fileTypeId={fileTypeId}
+              setFileTypeId={setFileTypeId}
+              fileTypes={fileTypes}
+            />
+          </div>
+          {isLoading && (
+            <div className="flex flex-col gap-8 w-full items-center mt-24">
+              <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
+              <div className="text-2xl">ファイルのロード中...</div>
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {files?.map((file) => {
+            return <FileCard key={file.id} file={file} />;
+          })}
         </div>
-
-        {isLoading && (
-          <div className="flex flex-col gap-8 w-full items-center mt-24">
-            <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
-            <div className="text-2xl">ファイルのロード中...</div>
-          </div>
-        )}
-
-        <TabsContent value="grid">
-          <div className="grid grid-cols-3 gap-4">
-            {files?.map((file) => {
-              return <FileCard key={file.id} file={file} />;
-            })}
-          </div>
-        </TabsContent>
-        <TabsContent value="table">
-          {/* @ts-ignore */}
-          <DataTable columns={columns} data={files} />
-        </TabsContent>
-      </Tabs>
+        </>
+      )}
 
       {files?.length === 0 && <Placeholder />}
     </div>

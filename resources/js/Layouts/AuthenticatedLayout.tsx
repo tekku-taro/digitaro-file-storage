@@ -21,7 +21,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
     }
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 pb-5">
             <nav className="bg-white border-b border-gray-100 shadow">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
@@ -39,11 +39,11 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                             </div>
                         </div>
                         {commons.storage_status && (
-                            <div className='w-1/3 flex justify-between items-center gap-3'>
+                            <div className='sm:w-1/3 w-2/3 flex justify-center sm:justify-between items-center gap-3'>
                                 <Progress className="w-1/2 h-5" fill={progressFill} value={commons.storage_status.rate > 100 ? 100 : commons.storage_status.rate}>
                                     {commons.storage_status.rate}
                                 </Progress>
-                                <span>{commons.storage_status.legend}</span>
+                                <span className='hidden sm:block'>{commons.storage_status.legend}</span>
                             </div>
                         )}
 

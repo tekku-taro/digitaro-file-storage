@@ -41,13 +41,13 @@ export function SearchBar({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex gap-2 items-center"
+          className="flex gap-2 sm:items-center justify-between sm:justify-center"
         >
           <FormField
             control={form.control}
             name="query"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormControl>
                   <Input {...field} placeholder="タイトルで検索..." />
                 </FormControl>
@@ -65,7 +65,8 @@ export function SearchBar({
             {form.formState.isSubmitting && (
               <Loader2 className="h-4 w-4 animate-spin" />
             )}
-            <SearchIcon /> 検索
+            <SearchIcon />
+            <span className="hidden sm:inline">検索</span>
           </Button>
         </form>
       </Form>

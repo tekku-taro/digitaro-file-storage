@@ -13,16 +13,18 @@ export function SideNav({groups}:{groups:GroupProps[]}) {
 //   const onGroupPage = !route().current('favorites.index') && !route().current('trash.index')
 //   console.log(groups);
   return (
-    <div className="w-40 flex flex-col gap-4">
+    <div className="w-fit sm:w-40 flex flex-col gap-4">
       {groups.map(group => (
         <Link href={route('files.index', {group_id:group.id})} key={group.id}>
           <Button
             variant={"link"}
-            className={clsx("flex gap-2", {
+            className={clsx("flex gap-2 px-2 sm:px-4", {
               "text-blue-500": (String(commons.selected_group?.id) == group.id && onGroupPage),
             })}
           >
-            <FileIcon /> {group.name}
+            <FileIcon />
+            <span className="hidden sm:inline">{group.name}</span>
+
           </Button>
       </Link>
       ))}
@@ -30,22 +32,24 @@ export function SideNav({groups}:{groups:GroupProps[]}) {
       <Link href={route('favorites.index')}>
         <Button
           variant={"link"}
-          className={clsx("flex gap-2", {
+          className={clsx("flex gap-2 px-2 sm:px-4", {
             "text-blue-500": route().current('favorites.index'),
           })}
         >
-          <StarIcon /> お気に入り
+          <StarIcon />
+          <span className="hidden sm:inline">お気に入り</span>
         </Button>
       </Link>
 
       <Link href={route('trash.index')}>
         <Button
           variant={"link"}
-          className={clsx("flex gap-2", {
+          className={clsx("flex gap-2 px-2 sm:px-4", {
             "text-blue-500": route().current('trash.index'),
           })}
         >
-          <TrashIcon /> 削除済み
+          <TrashIcon />
+          <span className="hidden sm:inline">削除済み</span>
         </Button>
       </Link>
     </div>

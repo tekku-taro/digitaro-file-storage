@@ -20,8 +20,8 @@ export default function Dashboard({ auth, groups, files, fileTypes}: PageProps &
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>}
         >
             <Head title="Dashboard" />
-            <main className="container mx-auto pt-12 min-h-screen">
-                <div className="flex gap-8">
+            <main className="container mx-auto pt-2 sm:pt-12 min-h-screen">
+                <div className="flex gap-1 sm:gap-8">
                     <SideNav groups={groups} />
 
                     <div className="w-full">
