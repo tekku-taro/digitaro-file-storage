@@ -44,7 +44,7 @@ class ChunkUploadService
         File::append($this->chunkPath, $this->file->get());
 
         if (!$this->isLastChunk) {
-        return null;
+            return null;
         }
 
         // if the last chunk, store the uploaded file

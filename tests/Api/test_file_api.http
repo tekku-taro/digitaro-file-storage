@@ -1,0 +1,38 @@
+@token = Bearer 6|pc9JbM9sLlckg2DPjyyTnER9xRk0Ye8lO1rQP0DG
+###
+
+GET http://localhost/digitaro-file-storage/public/api/files/download?file_path=GNN/sea_floor.png
+content-type: application/json
+Authorization: {{token}}
+
+###
+
+POST http://localhost/digitaro-file-storage/public/api/files/upload
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: {{token}}
+
+--boundary
+Content-Disposition: form-data; name="is_last_chunk"
+
+1
+--boundary
+Content-Disposition: form-data; name="title"
+
+title for form png
+--boundary
+Content-Disposition: form-data; name="nonce"
+
+12345
+--boundary
+Content-Disposition: form-data; name="file"; filename="form.png"
+Content-Type: image/png
+
+< ./form.png
+--boundary--
+
+###
+
+DELETE http://localhost/digitaro-file-storage/public/api/files?file_path=api/1/form.png&hard_delete=1
+content-type: application/json
+Authorization: {{token}}
+

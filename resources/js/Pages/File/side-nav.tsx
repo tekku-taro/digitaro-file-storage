@@ -29,6 +29,18 @@ export function SideNav({groups}:{groups:GroupProps[]}) {
       </Link>
       ))}
 
+      <Link href={route('api_files.index')}>
+        <Button
+          variant={"link"}
+          className={clsx("flex gap-2 px-2 sm:px-4", {
+            "text-blue-500": route().current('api_files.index'),
+          })}
+        >
+          <FileIcon />
+          <span className="hidden sm:inline">API ファイル</span>
+        </Button>
+      </Link>
+
       <Link href={route('favorites.index')}>
         <Button
           variant={"link"}

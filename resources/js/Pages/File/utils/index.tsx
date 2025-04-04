@@ -2,11 +2,15 @@ import { User } from "@/types";
 import { FileProps } from "../interfaces/file-props";
 
 export function isOnGroupPage():boolean {
-    return !route().current('favorites.index') && !route().current('trash.index');
+    return !route().current('favorites.index') && !route().current('trash.index') && !route().current('api_files.index');
 }
 
 export function isOnTrashPage():boolean {
     return route().current('trash.index');
+}
+
+export function isOnApiFilePage():boolean {
+    return route().current('api_files.index');
 }
 
 export function isOwnFile(file:FileProps, user:User):boolean {

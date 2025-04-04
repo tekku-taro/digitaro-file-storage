@@ -17,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware(['apikey'])->group(function () {
+    Route::post('/files/upload', [App\Http\Controllers\Api\FilesController::class, 'upload'])->name('api.upload');
+    Route::get('/files/download', [App\Http\Controllers\Api\FilesController::class, 'download'])->name('api.download');
+    Route::delete('/files', [App\Http\Controllers\Api\FilesController::class, 'destroy'])->name('api.delete');
+});

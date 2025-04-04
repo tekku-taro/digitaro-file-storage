@@ -31,7 +31,7 @@ import { PageProps } from "@/types";
 import { InertiaFormProps } from "@/types/inertia-form";
 import {  FileIdFormdataProps } from "../interfaces/formdata-props";
 import { BASE_URL } from "@/app";
-import { isOnTrashPage, isOwnFile } from "../utils";
+import { isOnApiFilePage, isOnTrashPage, isOwnFile } from "../utils";
 
 export function FileCardActions({
   file,
@@ -43,6 +43,7 @@ export function FileCardActions({
   const { commons, auth } = usePage<PageProps>().props
   const absoluteUrl = commons.upload_url + file.url
   const onTrashPage = isOnTrashPage();
+  const onApiFilePage = isOnApiFilePage();
   const { toast } = useToast();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -159,26 +160,28 @@ export function FileCardActions({
           >
             <FileIcon className="w-4 h-4" /> ダウンロード
           </DropdownMenuItem>
+          {!onApiFilePage && (
+            <DropdownMenuItem
+              onClick={() => {
+                toggleFavorite({
+                  fileId: file.id,
+                });
+              }}
+              className="flex gap-1 items-center cursor-pointer"
+            >
+              {isFavorited ? (
+                <div className="flex gap-1 items-center">
+                  <StarIcon className="w-4 h-4" /> お気に入り削除
+                </div>
+              ) : (
+                <div className="flex gap-1 items-center">
+                  <StarHalf className="w-4 h-4" /> お気に入り追加
+                </div>
+              )}
+            </DropdownMenuItem>
+          )}
 
-          <DropdownMenuItem
-            onClick={() => {
-              toggleFavorite({
-                fileId: file.id,
-              });
-            }}
-            className="flex gap-1 items-center cursor-pointer"
-          >
-            {isFavorited ? (
-              <div className="flex gap-1 items-center">
-                <StarIcon className="w-4 h-4" /> お気に入り削除
-              </div>
-            ) : (
-              <div className="flex gap-1 items-center">
-                <StarHalf className="w-4 h-4" /> お気に入り追加
-              </div>
-            )}
-          </DropdownMenuItem>
-          {isOwnFile(file, auth.user) ? (
+          {isOwnFile(file, auth.user) && !onApiFilePage ? (
             <>
               <DropdownMenuSeparator />
               {file.is_trashed && (

@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\File as RulesFile;
 use Inertia\Inertia;
 
 class FilesController extends Controller
@@ -43,6 +42,33 @@ class FilesController extends Controller
         }])->get();
 
         return Inertia::render('File/files/Index', [
+            'files' => $files,
+            'fileTypes' => FileType::all(),
+            'groups' => Auth::user()->userGroups,
+        ]);
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function apiFiles(Request $request)
+    {
+        $query = File::query();
+
+        $query->where('user_id', Auth::id())
+            ->whereNull('group_id');
+
+        if($request->has('file_type_id') && $request->file_type_id != 'all') {
+            $query->where('file_type_id', $request->file_type_id);
+        }
+
+        if($request->has('search')) {
+            $query->where('title', 'LIKE', '%' . $request->search . '%');
+        }
+
+        $files = $query->with(['fileType', 'user'])->get();
+
+        return Inertia::render('File/api_files/Index', [
             'files' => $files,
             'fileTypes' => FileType::all(),
             'groups' => Auth::user()->userGroups,
@@ -191,6 +217,7 @@ class FilesController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
+        // TODO 完全削除ができない問題あり
         try {
             DB::transaction(function () {
 

@@ -38,6 +38,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('/files', FilesController::class);
+    Route::get('/api_files', [FilesController::class, 'apiFiles'])->name('api_files.index');
     Route::get('/favorites', [FilesController::class, 'favorites'])->name('favorites.index');
     Route::get('/trash', [FilesController::class, 'trash'])->name('trash.index');
     Route::post('/files/upload', [FilesController::class, 'upload'])->name('files.upload');
@@ -50,6 +51,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // API keys management
+    Route::get('/api/keys', [App\Http\Controllers\ApiKeyController::class, 'index'])->name('api.keys.index');
+    Route::post('/api/keys', [App\Http\Controllers\ApiKeyController::class, 'store'])->name('api.keys.store');
+    Route::delete('/api/keys/{id}', [App\Http\Controllers\ApiKeyController::class, 'destroy'])->name('api.keys.destroy');
 });
 
 require __DIR__.'/auth.php';

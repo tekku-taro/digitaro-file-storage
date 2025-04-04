@@ -4,11 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use DateTimeInterface;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\NewAccessToken;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -44,6 +47,21 @@ class User extends Authenticatable implements FilamentUser
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    public function createToken(string $name, array $abilities = ['*'], $allowedIps = null, ?DateTimeInterface $expiresAt = null)
+    {
+        $token = $this->tokens()->create([
+            'name'      => $name,
+            'token'     => hash('sha256', $plainTextToken = Str::random(40)),
+            'abilities' => $abilities,
+            'allowed_ips'   => $allowedIps,
+            'expires_at' => $expiresAt,
+        ]);
+
+        return new NewAccessToken($token, $token->getKey().'|'.$plainTextToken);
+    }
+
 
     public function canAccessFilament(): bool
     {
