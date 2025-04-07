@@ -31,13 +31,19 @@ class FilesController extends Controller
             'is_last_chunk' => ['required', 'boolean'],
             'title' => 'required',
             'nonce' => 'required',
+            'sub_path' => 'nullable',
         ]);
 
         // documentPath == "/api/[user_id]/"
+        $documentPath = 'api/' . Auth::id();
+        if(isset($validated['sub_path'])) {
+            $documentPath = $documentPath . '/' . $validated['sub_path'];
+        }
+
         $chunkupload = new ChunkUploadService(
             file: request()->file,
             isLastChunk: $validated['is_last_chunk'],
-            documentPath: 'api/' . Auth::id(),
+            documentPath: $documentPath,
             nonce: $validated['nonce'],
         );
 

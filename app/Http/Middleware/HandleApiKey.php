@@ -13,11 +13,15 @@ class HandleApiKey
     {
         $apiKey = $request->header('Authorization');
 
-        if (!$apiKey || !str_starts_with($apiKey, 'Bearer ')) {
+        if (!$apiKey) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $tokenString = substr($apiKey, 7); // "Bearer " を除去  <= 改善の余地あり
+        if (!preg_match('/^(?i)bearer\s+([^\s]+)$/', $apiKey, $matches)) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $tokenString = $matches[1]; // "Bearer " を除去
         $token = PersonalAccessToken::findToken($tokenString);
 
         if (!$token) {
@@ -34,7 +38,13 @@ class HandleApiKey
         $allowedIps = explode(',', str_replace([" ", "\t", "\n", "\r"], "", $token->allowed_ips));
         $requestIp = $request->ip();
 
-        if (!empty($allowedIps) && !in_array($requestIp, $allowedIps)) {
+        // Check if the request IP is a loopback address (IPv4 or IPv6)
+        $isLoopback = in_array($requestIp, ['127.0.0.1', '::1']);
+
+        // Check if the request IP is in the allowed IPs or if it's a loopback address and 'localhost' is allowed
+        $isAllowed = in_array($requestIp, $allowedIps) || ($isLoopback && in_array('localhost', $allowedIps));
+
+        if (!empty($allowedIps) && !$isAllowed) {
             return response()->json(['message' => 'Access denied from this IP:' . $requestIp], 403);
         }
 
