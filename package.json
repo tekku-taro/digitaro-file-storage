@@ -3,6 +3,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "build:local": "tsc && vite build --mode localmode",
         "build": "tsc && vite build"
     },
     "devDependencies": {
