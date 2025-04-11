@@ -14,18 +14,18 @@ class HandleApiKey
         $apiKey = $request->header('Authorization');
 
         if (!$apiKey) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Unauthorized, no token found'], 401);
         }
 
         if (!preg_match('/^(?i)bearer\s+([^\s]+)$/', $apiKey, $matches)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Unauthorized, invalid token format'], 401);
         }
 
         $tokenString = $matches[1]; // "Bearer " を除去
         $token = PersonalAccessToken::findToken($tokenString);
 
         if (!$token) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Unauthorized, invalid token'], 401);
         }
 
 
@@ -35,7 +35,10 @@ class HandleApiKey
         }
 
         // IP制限の適用
-        $allowedIps = explode(',', str_replace([" ", "\t", "\n", "\r"], "", $token->allowed_ips));
+        $allowedIps = [];
+        if(isset($token->allowed_ips)) {
+            $allowedIps = explode(',', str_replace([" ", "\t", "\n", "\r"], "", $token->allowed_ips));
+        }
         $requestIp = $request->ip();
 
         // Check if the request IP is a loopback address (IPv4 or IPv6)
