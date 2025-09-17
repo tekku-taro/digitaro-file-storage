@@ -35,13 +35,22 @@ class ChunkUploadService
         if (!$this->isLastChunk) {
             return null;
         }
-        $mime = finfo_buffer(finfo_open(FILEINFO_MIME_TYPE), $this->storage->get($this->path));
-        return new UploadedFile($this->storage->path($this->path), $this->file->getClientOriginalName(), $mime, null, true);
+        $filePath = $this->storage->path($this->path);
+        $mime = finfo_file(finfo_open(FILEINFO_MIME_TYPE), $filePath);
+        return new UploadedFile($filePath, $this->file->getClientOriginalName(), $mime, null, true);
     }
 
     public function merge(): string|null
     {
-        File::append($this->chunkPath, $this->file->get());
+        $chunkFileStream = fopen($this->file->getRealPath(), 'rb');
+        $tempFileStream = fopen($this->chunkPath, 'ab');
+
+        if ($chunkFileStream && $tempFileStream) {
+            stream_copy_to_stream($chunkFileStream, $tempFileStream);
+
+            fclose($chunkFileStream);
+            fclose($tempFileStream);
+        }
 
         if (!$this->isLastChunk) {
             return null;

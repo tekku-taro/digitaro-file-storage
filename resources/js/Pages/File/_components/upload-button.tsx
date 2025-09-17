@@ -64,7 +64,7 @@ export function UploadButton() {
     try {
       setIsSubmitting(true)
       setProgress({percentage:1})
-      const chunkSize = commons.chunk_upload_size
+      const chunkSize = Number(commons.chunk_upload_size)
       const chunks = Math.ceil(file.size / chunkSize);
       for (let i = 0; i < chunks; i++) {
         const start = i * chunkSize;
@@ -77,10 +77,7 @@ export function UploadButton() {
         formData.append('group_id', String(values.group_id));
         formData.append('is_last_chunk', i === (chunks - 1) ? '1' : '0');
         await axios.post(postUrl, formData);
-        setProgress((progress) => ({
-          percentage: progress.percentage + chunkSize/ file.size * 100
-        }))
-
+        setProgress({ percentage: ((i + 1) / chunks) * 100 });
       }
       router.reload();
       toast({
@@ -93,7 +90,9 @@ export function UploadButton() {
     } catch (err) {
       console.log(err)
       if (axios.isAxiosError(err) && err.response)  {
-        setErrors(err.response.data.errors)
+        if(err.response.data.errors) { // validation errors
+            setErrors(err.response.data.errors)
+        }
         // Access to config, request, and response
       }
       router.reload();
