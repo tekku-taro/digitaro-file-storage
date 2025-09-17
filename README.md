@@ -4,7 +4,7 @@
 
 Laravel + React Inertiajsを使用したファイルストレージアプリです。フロントエンドのコードは[このリポジトリ](https://github.com/webdevcody/file-drive)に基づいています。
 
-LaravelとInertiajsはnextjsの代わりに採用されています。このアプリはLaravel Breeze認証を使用し、アップロードされたファイルをプロジェクトフォルダ内に保存するため、オリジナルのfile-driveアプリとは異なり、外部サービスを必要とせずにアパッチサーバー上で動作できます。
+LaravelとInertiajsはnextjsの代わりに採用されています。このアプリはLaravel Breeze認証を使用し、アップロードされたファイルをプロジェクトフォルダ内に保存するため、オリジナルのfile-driveアプリとは異なり、外部サービスを必要とせずにウェブサーバー上で動作できます。
 
 ## 管理パネル
 
