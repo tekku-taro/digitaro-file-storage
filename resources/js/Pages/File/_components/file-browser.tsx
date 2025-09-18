@@ -22,6 +22,7 @@ import { BASE_URL } from "@/app";
 import { isOnGroupPage } from "../utils";
 import { useMediaQuery } from "@/Hooks/useMediaQuery";
 import FileFilter from "./file-filter";
+import FileUploader from "./file-uploader";
 
 function Placeholder() {
   return (
@@ -49,7 +50,7 @@ export function FileBrowser({
   files,
   fileTypes,
 }: {
-  title: string;
+  title: string|JSX.Element;
   files: FileProps[];
   fileTypes: FileTypeProps[];
 }) {
@@ -153,6 +154,7 @@ export function FileBrowser({
       )}
 
       {files?.length === 0 && <Placeholder />}
+      <FileUploader />
     </div>
   );
 }

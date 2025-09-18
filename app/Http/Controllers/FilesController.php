@@ -217,10 +217,21 @@ class FilesController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        // TODO 完全削除ができない問題あり
         try {
-            DB::transaction(function () {
+            DB::transaction(function () use ($request, $id) {
+                // dd($request->all());
+                $file = File::withTrashed()->findOrFail($id);
 
+                if($request->has('hard_delete')) {
+                    $storage = Storage::disk('uploads');
+                    if($storage->exists($file->url)) {
+                        $storage->delete($file->url);
+                    }
+
+                    $file->forceDelete();
+                } else {
+                    $file->delete();
+                }
             });
         } catch (\Throwable $th) {
             return response()->json([
@@ -228,19 +239,7 @@ class FilesController extends Controller
                 'message' => $th->getMessage(),
             ]);
         }
-        // dd($request->all());
-        $file = File::withTrashed()->findOrFail($id);
 
-        if($request->has('hard_delete')) {
-            $storage = Storage::disk('uploads');
-            if($storage->exists($file->url)) {
-                $storage->delete($file->url);
-            }
-
-            $file->forceDelete();
-        } else {
-            $file->delete();
-        }
 
         return back();
     }
@@ -264,6 +263,50 @@ class FilesController extends Controller
         $file = File::withTrashed()->findOrFail($id);
 
         $file->restore();
+
+        return back();
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroyAll(Request $request)
+    {
+        try {
+            DB::transaction(function () use ($request) {
+                // dd($request->all());
+                $query = File::query();
+                if(!Auth::user()->is_admin) {
+                    $query->where('user_id', Auth::id());
+                }
+
+                $query->onlyTrashed();
+
+                if($request->has('file_type_id') && $request->file_type_id != 'all') {
+                    $query->where('file_type_id', $request->file_type_id);
+                }
+
+                if($request->has('search')) {
+                    $query->where('title', 'LIKE', '%' . $request->search . '%');
+                }
+                $files = $query->get();
+
+                $storage = Storage::disk('uploads');
+                foreach ($files as $file) {
+                    if($storage->exists($file->url)) {
+                        $storage->delete($file->url);
+                    }
+
+                    $file->forceDelete();
+                }
+            });
+        } catch (\Throwable $th) {
+            return response()->json([
+                'result' => 'failure',
+                'message' => $th->getMessage(),
+            ]);
+        }
+
 
         return back();
     }

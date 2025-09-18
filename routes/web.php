@@ -33,6 +33,7 @@ Route::get('/manual', function () {
 })->middleware(['auth', 'verified'])->name('manual');
 
 Route::middleware('auth')->group(function () {
+    Route::delete('/files/destroy_all', [FilesController::class, 'destroyAll'])->name('files.destroy_all');
     Route::resource('/files', FilesController::class);
     Route::get('/api_files', [FilesController::class, 'apiFiles'])->name('api_files.index');
     Route::get('/favorites', [FilesController::class, 'favorites'])->name('favorites.index');
