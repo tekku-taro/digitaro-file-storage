@@ -32,10 +32,6 @@ Route::get('/manual', function () {
     return view('docs.manual');
 })->middleware(['auth', 'verified'])->name('manual');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::resource('/files', FilesController::class);
     Route::get('/api_files', [FilesController::class, 'apiFiles'])->name('api_files.index');
